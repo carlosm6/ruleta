@@ -60,7 +60,9 @@ class JuegoRuleta:
                 color = "black"  # Color para los números negros
             
             # Crea un botón para cada número que llama a la función de apostar
-            ficha = tk.Button(self.tablero_frame, text=str(i), command=lambda i=i: self.apostar(i), bg=color, fg="#ffffff", width=5, height=2)
+            def crear_comando(numero):
+                return lambda: self.apostar(numero)
+            ficha = tk.Button(self.tablero_frame, text=str(i), command=crear_comando(i), bg=color, fg="#ffffff", width=5, height=2)
             ficha.grid(row=(i // 12) + 1, column=i % 12, padx=5, pady=5)  # Coloca el botón en la cuadrícula
             self.fichas.append(ficha)  # Añade el botón a la lista de fichas
 
