@@ -1,3 +1,4 @@
+
 import random
 import time
 
@@ -8,54 +9,52 @@ class JuegoRuleta:
         self.negros = [2, 4, 6, 8, 10, 11, 13, 15, 17, 19, 20, 22, 24, 26, 28, 29, 31, 33, 35]  # Números negros
         self.fondo = 1000  # Saldo inicial del jugador
 
-    def apostar(self, numero, cantidad):
-        if self.fondo <= 0:  # Verifica si el saldo es cero
-            return "Fin del juego", "No tienes más saldo para seguir jugando."
-
-        if cantidad > self.fondo:  # Verifica si la apuesta es mayor que el saldo
+    def apostar(self, apuestas):
+        total_apuesta = sum(cantidad for _, cantidad in apuestas)
+        if self.fondo <= 0 or total_apuesta > self.fondo:  # Verifica si el saldo es cero o si la apuesta total es mayor que el saldo
             return "Error", "No tienes suficiente saldo para realizar esta apuesta."
 
-        self.fondo -= cantidad  # Resta la apuesta del fondo
+        self.fondo -= total_apuesta  # Resta la apuesta total del fondo
 
-        # Simulación de giro
-        time.sleep(1)  # Pausa para simular el giro
+        resultados = []
+        for numero, cantidad in apuestas:
+            # Simulación de giro
+            time.sleep(1)  # Pausa para simular el giro
+            aleatorio = random.choice(self.ruleta)  # Selecciona un número aleatorio de la ruleta
 
-        aleatorio = random.choice(self.ruleta)  # Selecciona un número aleatorio de la ruleta
+            # Evaluación de la apuesta
+            if numero == aleatorio:  # Si el número apostado es el mismo que el resultado
+                ganancia = cantidad * 36  # Calcula la ganancia
+                self.fondo += ganancia  # Aumenta el saldo
+                resultados.append(f"¡Ganaste en el número {numero}! Ganancia: ${ganancia}")
+            else:
+                resultados.append(f"Perdiste en el número {numero}! Apuesta: ${cantidad}")
 
-        # Evaluación de la apuesta
-        if numero == aleatorio:  # Si el número apostado es el mismo que el resultado
-            ganancia = cantidad * 36  # Calcula la ganancia
-            self.fondo += ganancia  # Aumenta el saldo
-            return "Ganaste", f"¡Ganaste en el número {numero}! Ganancia: ${ganancia}"
-        else:
-            return "Perdiste", f"Perdiste en el número {numero}! Apuesta: ${cantidad}"
+        return "Resultados", "\n".join(resultados)
 
-    def apostar_color(self, color, cantidad):
-        if self.fondo <= 0:  # Verifica si el saldo es cero
-            return "Fin del juego", "No tienes más saldo para seguir jugando."
-
-        if cantidad > self.fondo:  # Verifica si la apuesta es mayor que el saldo
+    def apostar_color(self, apuestas_color):
+        total_apuesta = sum(cantidad for _, cantidad in apuestas_color)
+        if self.fondo <= 0 or total_apuesta > self.fondo:  # Verifica si el saldo es cero o si la apuesta total es mayor que el saldo
             return "Error", "No tienes suficiente saldo para realizar esta apuesta."
 
-        self.fondo -= cantidad  # Resta la apuesta del fondo
+        self.fondo -= total_apuesta  # Resta la apuesta total del fondo
 
-        # Simulación de giro
-        time.sleep(1)  # Pausa para simular el giro
+        resultados = []
+        for color, cantidad in apuestas_color:
+            # Simulación de giro
+            time.sleep(1)  # Pausa para simular el giro
+            aleatorio = random.choice(self.ruleta)  # Selecciona un número aleatorio de la ruleta
 
-        aleatorio = random.choice(self.ruleta)  # Selecciona un número aleatorio de la ruleta
-
-        # Evaluación de la apuesta
-        if color == "rojo":  # Si se apostó en rojo
-            if aleatorio in self.rojos:  # Verifica si el número aleatorio está en los números rojos
-                ganancia = cantidad * 2  # Calcula la ganancia
-                self.fondo += ganancia  # Aumenta el saldo
-                return "Ganaste", f"¡Ganaste en rojo! Ganancia: ${ganancia}"
+            # Evaluación de la apuesta
+            if color == "rojo" and aleatorio in self.rojos:
+                ganancia = cantidad * 2
+                self.fondo += ganancia
+                resultados.append(f"¡Ganaste en rojo! Ganancia: ${ganancia}")
+            elif color == "negro" and aleatorio in self.negros:
+                ganancia = cantidad * 2
+                self.fondo += ganancia
+                resultados.append(f"¡Ganaste en negro! Ganancia: ${ganancia}")
             else:
-                return "Perdiste", f"Perdiste en rojo! Apuesta: ${cantidad}"
-        elif color == "negro":  # Si se apostó en negro
-            if aleatorio in self.negros:  # Verifica si el número aleatorio está en los números negros
-                ganancia = cantidad * 2  # Calcula la ganancia
-                self.fondo += ganancia  # Aumenta el saldo
-                return "Ganaste", f"¡Ganaste en negro! Ganancia: ${ganancia}"
-            else:
-                return "Perdiste", f"Perdiste en negro! Apuesta: ${cantidad}"
+                resultados.append(f"Perdiste en {color}! Apuesta: ${cantidad}")
+
+        return "Resultados", "\n".join(resultados)

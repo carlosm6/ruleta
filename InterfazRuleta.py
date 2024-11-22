@@ -1,8 +1,8 @@
-import tkinter as tk  # Importa la biblioteca tkinter para crear la interfaz gráfica
-from tkinter import messagebox, simpledialog  # Importa cuadros de diálogo y mensajes
-from JuegoRuleta import JuegoRuleta  # Importa la clase JuegoRuleta desde el archivo juego_ruleta.py
-import random
+import tkinter as tk
+from tkinter import messagebox, simpledialog
+from JuegoRuleta import JuegoRuleta  # Asegúrate de que este archivo esté en el mismo directorio
 import time
+import random
 
 class InterfazRuleta:
     def __init__(self, master):
@@ -21,6 +21,10 @@ class InterfazRuleta:
         self.balance_label = tk.Label(main_frame, text=f"Saldo: ${self.juego.fondo}", font=("Helvetica", 14), bg="#222831", fg="#eeeeee")
         self.balance_label.grid(row=0, column=0, pady=(0, 15))
 
+        # Mensaje para mostrar resultados
+        self.result_label = tk.Label(main_frame, text="", font=("Helvetica", 14), bg="#222831", fg="#00adb5")
+        self.result_label.grid(row=1, column=0, pady=(0, 15))
+
         # Tablero de apuestas
         self.tablero_frame = tk.Frame(master, bg="#222831")
         self.tablero_frame.pack(pady=20)
@@ -29,6 +33,8 @@ class InterfazRuleta:
         self.tablero_label.grid(row=0, column=0, columnspan=3)
 
         self.fichas = []
+        self.apuestas = []  # Lista para almacenar las apuestas
+
         for i in range(37):
             color = "#00adb5"
             if i == 0:
@@ -62,43 +68,73 @@ class InterfazRuleta:
 
     def apostar(self, numero):
         if self.juego.fondo <= 0:  # Verifica si el saldo es cero
-            messagebox.showinfo("Fin del juego", "No tienes más saldo para seguir jugando.")  # Muestra un mensaje
+            self.result_label.config(text="No tienes más saldo para seguir jugando.")  # actualiza el mensaje en la interfaz
             return
 
         cantidad = simpledialog.askinteger("Apuesta", f"Elige tu apuesta para el número {numero}: $", minvalue=1, maxvalue=self.juego.fondo)  # Solicita la cantidad a apostar
         if cantidad is None:  # Si el usuario cancela
             return
 
-        resultado, mensaje = self.juego.apostar(numero, cantidad)  # Realiza la apuesta
-        messagebox.showinfo(resultado, mensaje)  # Muestra el resultado de la apuesta
+        self.juego.fondo -= cantidad  # Resta la cantidad apostada del saldo
+        self.apuestas.append((numero, cantidad))  # Agrega la apuesta a la lista
         self.balance_label.config(text=f"Saldo: ${self.juego.fondo}")  # Actualiza la etiqueta del saldo
-
-        # Fin del juego si saldo es cero
-        if self.juego.fondo <= 0:  # Si el saldo es cero
-            messagebox.showinfo("Fin del juego", "No tienes más saldo para seguir jugando.")  # Muestra un mensaje de fin de juego
 
     def apostar_color(self, color):
         if self.juego.fondo <= 0:  # Verifica si el saldo es cero
-            messagebox.showinfo("Fin del juego", "No tienes más saldo para seguir jugando.")  # Muestra un mensaje
+            self.result_label.config(text="No tienes más saldo para seguir jugando.")  # Actualiza el mensaje en la interfaz
             return
 
         cantidad = simpledialog.askinteger("Apuesta", f"Elige tu apuesta para el color {color}: $", minvalue=1, maxvalue=self.juego.fondo)  # Solicita la cantidad a apostar
         if cantidad is None:  # Si el usuario cancela
             return
 
-        resultado, mensaje = self.juego.apostar_color(color, cantidad)  # Realiza la apuesta
-        messagebox.showinfo(resultado, mensaje)  # Muestra el resultado de la apuesta
+        self.juego.fondo -= cantidad  # Resta la cantidad apostada del saldo
+        self.apuestas.append((color, cantidad))  # Agrega la apuesta a la lista
         self.balance_label.config(text=f"Saldo: ${self.juego.fondo}")  # Actualiza la etiqueta del saldo
 
-        # Fin del juego si saldo es cero
-        if self.juego.fondo <= 0:  # Si el saldo es cero
-            messagebox.showinfo("Fin del juego", "No tienes más saldo para seguir jugando.")  # Muestra un mensaje de fin de juego
-
     def girar_ruleta(self):
-        messagebox.showinfo("Girar Ruleta", "La ruleta está girando...")  # Mensaje de giro
-        time.sleep(1)  # Simula el tiempo de giro
+        if not self.apuestas:  # Verifica si hay apuestas
+            self.result_label.config(text="Debes realizar al menos una apuesta antes de girar la ruleta.")
+            return
+
+        self.result_label.config(text="La ruleta está girando... 3")
+        self.master.update()
+        time.sleep(1)
+
+        self.result_label.config(text="La ruleta está girando... 2")
+        self.master.update()
+        time.sleep(1)
+
+        self.result_label.config(text="La ruleta está girando... 1")
+        self.master.update()
+        time.sleep(1)
+
         aleatorio = random.choice(self.juego.ruleta)  # Selecciona un número aleatorio de la ruleta
-        messagebox.showinfo("Resultado", f"La ruleta ha terminado de girar. Número: {aleatorio}")  # Mensaje de finalización del giro
+        resultado_mensaje = f"La ruleta ha terminado de girar. Número: {aleatorio}\n"
+
+        total_ganancias = 0  # Inicializa las ganancias totales
+
+    # Procesar las apuestas
+        for apuesta in self.apuestas:
+         if isinstance(apuesta[0], int):  # Si es una apuesta a un número
+            resultado, mensaje = self.juego.apostar([apuesta])  # Realiza la apuesta
+        else:  # Si es una apuesta a un color
+            resultado, mensaje = self.juego.apostar_color([apuesta])  # Realiza la apuesta
+        
+        if isinstance(resultado, int):  # Asegúrate de que el resultado sea un entero
+            total_ganancias += resultado  # Suma las ganancias
+        resultado_mensaje += mensaje + "\n"  # Agrega el mensaje al resultado
+
+    # Muestra el resultado final en la interfaz
+        if total_ganancias > 0:
+            resultado_mensaje += f"¡Ganaste ${total_ganancias}!"
+        else:
+            resultado_mensaje += "Perdiste tus apuestas."
+
+        self.result_label.config(text=resultado_mensaje)  # Actualiza el mensaje final en la interfaz
+
+        self.apuestas.clear()  # Limpia las apuestas después de girar la ruleta
+        self.balance_label.config(text=f"Saldo: ${self.juego.fondo}")  # Actualiza la etiqueta del saldo
 
 if __name__ == "__main__":
     root = tk.Tk()  # Crea la ventana principal
