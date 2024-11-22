@@ -118,13 +118,20 @@ class InterfazRuleta:
         for apuesta in self.apuestas:
          if isinstance(apuesta[0], int):  # Si es una apuesta a un número
             resultado, mensaje = self.juego.apostar([apuesta])  # Realiza la apuesta
-        else:  # Si es una apuesta a un color
-            resultado, mensaje = self.juego.apostar_color([apuesta])  # Realiza la apuesta
-        
-        if isinstance(resultado, int):  # Asegúrate de que el resultado sea un entero
             total_ganancias += resultado  # Suma las ganancias
-        resultado_mensaje += mensaje + "\n"  # Agrega el mensaje al resultado
-
+            resultado_mensaje += mensaje + "\n"
+        else:  # Si es una apuesta a un color
+            color_apostado = apuesta[0]
+            if (color_apostado == "rojo" and aleatorio in self.juego.rojos) or \
+               (color_apostado == "negro" and aleatorio in self.juego.negros):
+                # Si el número que salió es del color apostado
+                ganancia = apuesta[1] * 2  # Por ejemplo, duplicas la apuesta
+                total_ganancias += ganancia
+                resultado_mensaje += f"Apostaste en {color_apostado} y ganaste ${ganancia}!\n"
+            else:
+                resultado_mensaje += f"Apostaste en {color_apostado} y perdiste.\n"
+        self.juego.fondo += total_ganancias    
+      
     # Muestra el resultado final en la interfaz
         if total_ganancias > 0:
             resultado_mensaje += f"¡Ganaste ${total_ganancias}!"
