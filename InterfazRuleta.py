@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
-from JuegoRuleta import JuegoRuleta  # Asegúrate de que este archivo esté en el mismo directorio
+from tkinter import simpledialog
 import time
 import random
+from JuegoRuleta import JuegoRuleta
 
 class InterfazRuleta:
     def __init__(self, master):
@@ -68,7 +68,7 @@ class InterfazRuleta:
 
     def apostar(self, numero):
         if self.juego.fondo <= 0:  # Verifica si el saldo es cero
-            self.result_label.config(text="No tienes más saldo para seguir jugando.")  # actualiza el mensaje en la interfaz
+            self.result_label.config(text="No tienes más saldo para seguir jugando.")  # Actualiza el mensaje en la interfaz
             return
 
         cantidad = simpledialog.askinteger("Apuesta", f"Elige tu apuesta para el número {numero}: $", minvalue=1, maxvalue=self.juego.fondo)  # Solicita la cantidad a apostar
@@ -113,30 +113,34 @@ class InterfazRuleta:
         resultado_mensaje = f"La ruleta ha terminado de girar. Número: {aleatorio}\n"
 
         total_ganancias = 0  # Inicializa las ganancias totales
+        todas_perdidas = True  # Variable para verificar si todas las apuestas fueron pérdidas
 
-    # Procesar las apuestas
+        # Procesar las apuestas
         for apuesta in self.apuestas:
-         if isinstance(apuesta[0], int):  # Si es una apuesta a un número
-            resultado, mensaje = self.juego.apostar([apuesta])  # Realiza la apuesta
-            total_ganancias += resultado  # Suma las ganancias
-            resultado_mensaje += mensaje + "\n"
-        else:  # Si es una apuesta a un color
-            color_apostado = apuesta[0]
-            if (color_apostado == "rojo" and aleatorio in self.juego.rojos) or \
-               (color_apostado == "negro" and aleatorio in self.juego.negros):
-                # Si el número que salió es del color apostado
-                ganancia = apuesta[1] * 2  # Por ejemplo, duplicas la apuesta
-                total_ganancias += ganancia
-                resultado_mensaje += f"Apostaste en {color_apostado} y ganaste ${ganancia}!\n"
-            else:
-                resultado_mensaje += f"Apostaste en {color_apostado} y perdiste.\n"
-        self.juego.fondo += total_ganancias    
-      
-    # Muestra el resultado final en la interfaz
-        if total_ganancias > 0:
-            resultado_mensaje += f"¡Ganaste ${total_ganancias}!"
+            if isinstance(apuesta[0], int):  # Si es una apuesta a un número
+                resultado, mensaje = self.juego.apostar([apuesta])  # Realiza la apuesta
+                if isinstance(resultado, int):  # Asegúrate de que resultado es un entero
+                    total_ganancias += resultado  # Suma las ganancias
+                    todas_perdidas = False  # Al menos una apuesta fue ganadora
+                resultado_mensaje += mensaje + "\n"
+            else:  # Si es una apuesta a un color
+                color_apostado = apuesta[0]
+                if (color_apostado == "rojo" and aleatorio in self.juego.rojos) or \
+                   (color_apostado == "negro" and aleatorio in self.juego.negros):
+                    ganancia = apuesta[1] * 2  # Por ejemplo, duplicas la apuesta
+                    total_ganancias += ganancia
+                    todas_perdidas = False  # Al menos una apuesta fue ganadora
+                    resultado_mensaje += f"Apostaste en {color_apostado} y ganaste ${ganancia}!\n"
+                else:
+                    resultado_mensaje += f"Apostaste en {color_apostado} y perdiste.\n"
+
+        self.juego.fondo += total_ganancias  # Actualiza el fondo con las ganancias totales
+
+        # Muestra el resultado final en la interfaz
+        if not todas_perdidas:
+            resultado_mensaje = f"¡Has ganado ${total_ganancias}! Número salido: {aleatorio}"  # Mensaje de ganancia
         else:
-            resultado_mensaje += "Perdiste tus apuestas."
+            resultado_mensaje = f"Perdiste tus apuestas. Número salido: {aleatorio}"  # Mensaje de pérdida
 
         self.result_label.config(text=resultado_mensaje)  # Actualiza el mensaje final en la interfaz
 
@@ -146,4 +150,4 @@ class InterfazRuleta:
 if __name__ == "__main__":
     root = tk.Tk()  # Crea la ventana principal
     app = InterfazRuleta(root)  # Inicializa la interfaz del juego
-    root.mainloop()  # Inicia el bucle principal de la interfaz
+    root.mainloop()  # Inicia el bucle principal de la
