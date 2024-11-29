@@ -8,11 +8,13 @@ class InterfazRuleta:
     def __init__(self, master):
         self.master = master
         self.master.title("Juego de Ruleta")
-        self.master.geometry("900x600")
+        self.master.geometry("1000x1000")
         self.master.configure(bg="#222831")
 
         self.juego = JuegoRuleta()  # Inicializa la lógica del juego
 
+        self.fichas = []
+        self.apuestas = [] 
         # Frame principal
         main_frame = tk.Frame(master, bg="#222831")
         main_frame.pack(pady=20)
@@ -30,10 +32,10 @@ class InterfazRuleta:
         self.tablero_frame.pack(pady=20)
 
         self.tablero_label = tk.Label(self.tablero_frame, text="Tablero de Apuestas", font=("Helvetica", 14), bg="#222831", fg="#00adb5")
-        self.tablero_label.grid(row=0, column=0, columnspan=3)
+        self.tablero_label.grid(row=0, column=0, columnspan=12)
 
-        self.fichas = []
-        self.apuestas = []  # Lista para almacenar las apuestas
+        num_columnas = 12
+        
 
         for i in range(37):
             color = "#00adb5"
@@ -48,23 +50,31 @@ class InterfazRuleta:
                 return lambda: self.apostar(numero)
 
             ficha = tk.Button(self.tablero_frame, text=str(i), command=crear_comando(i), bg=color, fg="#ffffff", width=5, height=2)
-            ficha.grid(row=(i // 12) + 1, column=i % 12, padx=5, pady=5)
+            fila = i // num_columnas + 1  # +1 para dejar espacio para el label
+            columna = i % num_columnas
+            ficha.grid(row=fila, column=columna, padx=5, pady=5, sticky="nsew")
             self.fichas.append(ficha)
+        
+       # Frame para los botones de color y girar ruleta
+        botones_frame = tk.Frame(master, bg="#222831")
+        botones_frame.pack(pady=20)  # Puedes ajustar el padding según sea necesario
 
         # Botones para apostar en rojo y negro
-        self.boton_rojo = tk.Button(self.tablero_frame, text="Apostar en Rojo", command=lambda: self.apostar_color("rojo"), bg="#ff4d4d", fg="#ffffff", width=15, height=2)
-        self.boton_rojo.grid(row=4, column=0, padx=5, pady=5)
+        self.boton_rojo = tk.Button(botones_frame, text="Apostar en Rojo", command=lambda: self.apostar_color("rojo"), bg="#ff4d4d", fg="#ffffff", width=15, height=2)
+        self.boton_rojo.grid(row=0, column=0, padx=5, pady=5)
 
-        self.boton_negro = tk.Button(self.tablero_frame, text="Apostar en Negro", command=lambda: self.apostar_color("negro"), bg="#4d4dff", fg="#ffffff", width=15, height=2)
-        self.boton_negro.grid(row=4, column=1, padx=5, pady=5)
+        self.boton_negro = tk.Button(botones_frame, text="Apostar en Negro", command=lambda: self.apostar_color("negro"), bg="black", fg="#ffffff", width=15, height=2)
+        self.boton_negro.grid(row=0, column=1, padx=5, pady=5)
 
-        # Botón para girar la ruleta
-        self.boton_girar = tk.Button(self.tablero_frame, text="Girar Ruleta", command=self.girar_ruleta, bg="#00adb5", fg="#ffffff", width=15, height=2)
-        self.boton_girar.grid(row=4, column=2, padx=5, pady=5)
+        self.boton_girar = tk.Button(botones_frame, text="Girar Ruleta", command=self.girar_ruleta, bg="#00adb5", fg="#ffffff", width=15, height=2)
+        self.boton_girar.grid(row=0, column=2, padx=5, pady=5)
 
         # Botón de salida
         self.boton_salir = tk.Button(main_frame, text="Salir", command=self.master.quit, font=("Helvetica", 14), bg="#f05454", fg="#eeeeee", activebackground="#d94141", width=15, height=2)
-        self.boton_salir.grid(row=3, column=0, pady=10)
+        self.boton_salir.grid(row=20, column=0, pady=10)
+
+        self.apuestas_label = tk.Label(self.tablero_frame, text="Apuestas realizadas:\n", font=("Helvetica", 12), bg="#222831", fg="#00adb5", anchor="w", justify="left")
+        self.apuestas_label.grid(row=fila + 1, column=0, columnspan=12, pady=(10, 0), sticky="w")  # Coloca el label debajo de los botones
 
     def apostar(self, numero):
         if self.juego.fondo <= 0:  # Verifica si el saldo es cero
@@ -79,6 +89,8 @@ class InterfazRuleta:
         self.apuestas.append((numero, cantidad))  # Agrega la apuesta a la lista
         self.balance_label.config(text=f"Saldo: ${self.juego.fondo}")  # Actualiza la etiqueta del saldo
 
+        apuestas_text = "\n".join([f"Número: {apuesta[0]}, Cantidad: ${apuesta[1]}" for apuesta in self.apuestas])
+        self.apuestas_label.config(text=f"Apuestas realizadas:\n{apuestas_text}")
     def apostar_color(self, color):
         if self.juego.fondo <= 0:  # Verifica si el saldo es cero
             self.result_label.config(text="No tienes más saldo para seguir jugando.")  # Actualiza el mensaje en la interfaz
