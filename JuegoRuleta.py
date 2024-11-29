@@ -1,6 +1,9 @@
-
 import random
+import pymysql
 
+conexion = pymysql.connect(host = 'localhost', user = 'root', password = 'root', database = 'datosRuleta')
+cur = conexion.cursor()
+cur.execute("SELECT * FROM ruleta")
 
 
 
