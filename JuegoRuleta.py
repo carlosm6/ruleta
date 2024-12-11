@@ -1,10 +1,10 @@
 import random
 import pymysql
-
+""""
 conexion = pymysql.connect(host = 'localhost', user = 'root', password = 'root', database = 'datosRuleta')
 cur = conexion.cursor()
 cur.execute("SELECT * FROM ruleta")
-
+"""
 
 
 class JuegoRuleta:
@@ -30,9 +30,9 @@ class JuegoRuleta:
     def _generar_mensaje(self, resultado, cantidad_apostada, tipo, ganancia=0):
        
         if resultado:
-            return f"Apostaste en {tipo} y ganaste ${ganancia}!"
+            return f"Apostaste en {tipo} y ganaste €{ganancia}!"
         else:
-            return f"Apostaste en {tipo} y perdiste ${cantidad_apostada}."
+            return f"Apostaste en {tipo} y perdiste €{cantidad_apostada}."
 
 
     # Realiza una apuesta en un número específico.
